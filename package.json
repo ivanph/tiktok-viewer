@@ -1,0 +1,39 @@
+{
+  "name": "tiktok-viewer",
+  "version": "0.0.1",
+  "license": "MIT",
+  "scripts": {
+    "android": "react-native run-android",
+    "ios": "react-native run-ios",
+    "start": "react-native start",
+    "test": "jest",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@react-native-community/viewpager": "^4.1.6",
+    "query-string": "^6.13.5",
+    "react": "16.13.1",
+    "react-native": "0.63.3",
+    "react-native-linear-gradient": "^2.5.6",
+    "react-native-video": "^5.1.0-alpha8",
+    "styled-components": "^5.2.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.8.4",
+    "@babel/runtime": "^7.8.4",
+    "babel-jest": "^25.1.0",
+    "jest": "^25.1.0",
+    "metro-react-native-babel-preset": "^0.59.0",
+    "react-test-renderer": "16.13.1",
+    "standardx": "^7.0.0",
+    "eslint": "^7.20.0"
+  },
+  "jest": {
+    "preset": "react-native"
+  },
+  "standardx": {
+    "globals": [
+      "fetch"
+    ]
+  }
+}
