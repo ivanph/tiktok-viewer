@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 import Video from 'react-native-video';
 
@@ -27,7 +27,7 @@ const VideoPlayer = ({ video, poster, isSelected, paused = false }) => {
       repeat
       source={{
         uri: video,
-        headers: { 'user-agent': 'okhttp', referer: 'https://www.tiktok.com/' }
+        headers: { 'user-agent': 'okhttp', referer: 'https://www.tiktok.com/' },
       }}
       resizeMode='stretch'
     />

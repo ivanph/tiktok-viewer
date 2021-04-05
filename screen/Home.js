@@ -26,9 +26,11 @@ const Home = () => {
         api.userProfile('herlyrg'),
         api.userProfile('thebomb602'),
         api.userProfile('el.josue.perrin'),
-        api.userProfile('josmosquedaa')
+        api.userProfile('josmosquedaa'),
       ]);
-      const videos = (await Promise.all(users.map(u => api.userFeed(u, 20)))).flat().sort((a, b) => b.date - a.date);
+      const videos = (await Promise.all(users.map((u) => api.userFeed(u, 20))))
+        .flat()
+        .sort((a, b) => b.date - a.date);
       setIsLoading(false);
       setVideos(videos);
     } catch (err) {
@@ -46,7 +48,7 @@ const Home = () => {
         style={{
           backgroundColor: '#170c1a',
           width: '100%',
-          height: '100%'
+          height: '100%',
         }}
         source={splash}
       />

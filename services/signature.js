@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 function sign(userAgent, url) {
     global.navigator = {
         userAgent,

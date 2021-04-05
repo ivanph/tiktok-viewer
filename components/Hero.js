@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import { Dimensions, TouchableOpacity, View } from 'react-native';
+import { Dimensions, TouchableOpacity } from 'react-native';
 
 import LinearGradient from 'react-native-linear-gradient';
 
@@ -38,12 +38,19 @@ const Hero = ({ videos }) => {
   return (
     <Container
       orientation='vertical'
-      onPageSelected={(e) => { setSelected(e.nativeEvent.position); setPaused(false); }}
+      onPageSelected={(e) => {
+        setSelected(e.nativeEvent.position);
+        setPaused(false);
+      }}
       initialPage={0}
     >
       {videos.map((item, index) => {
         return (
-          <TouchableOpacity activeOpacity={1} key={index} onPress={() => setPaused(!paused)}>
+          <TouchableOpacity
+            activeOpacity={1}
+            key={index}
+            onPress={() => setPaused(!paused)}
+          >
             <VideoPlayer
               video={item.video}
               poster={item.poster}
@@ -56,12 +63,16 @@ const Hero = ({ videos }) => {
                 'rgba(26,26,26,0.6)',
                 'rgba(26,26,26,0)',
                 'rgba(26,26,26,0)',
-                'rgba(26,26,26,0.6)'
+                'rgba(26,26,26,0.6)',
               ]}
             >
               <Center>
                 <Info user={item.user} />
-                <Sidebar avatar={item.user.avatar} count={item.count} musicThumb={item.musicThumb} />
+                <Sidebar
+                  avatar={item.user.avatar}
+                  count={item.count}
+                  musicThumb={item.musicThumb}
+                />
               </Center>
             </Gradient>
           </TouchableOpacity>
