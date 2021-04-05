@@ -1,44 +1,68 @@
-
-import sign from './signature';
 import { stringify } from 'query-string';
 
-const userAgentList = [
-  'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:83.0) Gecko/20100101 Firefox/83.0',
-  'Mozilla/5.0 (Linux; Android 8.0.0; SM-G960F Build/R16NW) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.84 Mobile Safari/537.36',
-  'Mozilla/5.0 (Linux; Android 7.0; SM-G892A Build/NRD90M; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/60.0.3112.107 Mobile Safari/537.36',
-  'Mozilla/5.0 (Linux; Android 7.0; SM-G930VC Build/NRD90M; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/58.0.3029.83 Mobile Safari/537.36',
-  'Mozilla/5.0 (Linux; Android 6.0.1; SM-G935S Build/MMB29K; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/55.0.2883.91 Mobile Safari/537.36',
-  'Mozilla/5.0 (Linux; Android 6.0.1; SM-G920V Build/MMB29K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.98 Mobile Safari/537.36',
-  'Mozilla/5.0 (iPhone; CPU iPhone OS 12_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/69.0.3497.105 Mobile/15E148 Safari/605.1',
-  'Mozilla/5.0 (iPhone; CPU iPhone OS 12_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) FxiOS/13.2b11866 Mobile/16A366 Safari/605.1.15',
-  'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A372 Safari/604.1',
-  'Mozilla/5.0 (Linux; Android 7.0; Pixel C Build/NRD90M; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/52.0.2743.98 Safari/537.36'
-];
-const feedUrl = 'https://m.tiktok.com/api/item_list/?';
-const profileUrl = 'https://m.tiktok.com/node/share/user/';
+const userAgent = () => {
+  const os = [
+    'Macintosh; Intel Mac OS X 10_15_7',
+    'Macintosh; Intel Mac OS X 10_15_5',
+    'Macintosh; Intel Mac OS X 10_11_6',
+    'Macintosh; Intel Mac OS X 10_6_6',
+    'Macintosh; Intel Mac OS X 10_9_5',
+    'Macintosh; Intel Mac OS X 10_10_5',
+    'Macintosh; Intel Mac OS X 10_7_5',
+    'Macintosh; Intel Mac OS X 10_11_3',
+    'Macintosh; Intel Mac OS X 10_10_3',
+    'Macintosh; Intel Mac OS X 10_6_8',
+    'Macintosh; Intel Mac OS X 10_10_2',
+    'Macintosh; Intel Mac OS X 10_10_3',
+    'Macintosh; Intel Mac OS X 10_11_5',
+    'Windows NT 10.0; Win64; x64',
+    'Windows NT 10.0; WOW64',
+    'Windows NT 10.0',
+  ];
+
+  return `Mozilla/5.0 (${
+    os[Math.floor(Math.random() * os.length)]
+  }) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${
+    Math.floor(Math.random() * 3) + 87
+  }.0.${Math.floor(Math.random() * 190) + 4100}.${
+    Math.floor(Math.random() * 50) + 140
+  } Safari/537.36`;
+};
+
+const makeid = (len) => {
+  let text = '';
+  const charList = '0123456789';
+  for (let i = 0; i < len; i += 1) {
+    text += charList.charAt(Math.floor(Math.random() * charList.length));
+  }
+  return text;
+};
+
+const feedUrl = 'https://m.tiktok.com/api/post/item_list/?';
+const profileUrl = 'https://www.tiktok.com/@';
 
 function transformItem (item) {
   const video = {
     id: 0,
     video: '',
     poster: {
-      uri: ''
+      uri: '',
     },
     user: {
       username: '',
       description: '',
       music: { uri: '' },
       avatar: {
-        uri: ''
-      }
+        uri: '',
+      },
     },
     count: {
       like: '',
       comment: '',
-      share: ''
+      share: '',
     },
     musicThumb: { uri: '' },
-    date: item.createTime
+    date: item.createTime,
   };
   video.video = item.video.downloadAddr;
   video.id = item.id;
@@ -54,42 +78,51 @@ function transformItem (item) {
 
 const api = {
   userProfile: async (user = '') => {
-    const res = await fetch(`${profileUrl}@${user}`, {
+    const res = await fetch(`${profileUrl}${user}`, {
       headers: {
-        'user-agent': userAgentList[Math.floor(Math.random() * userAgentList.length)]
-      }
+        'user-agent': userAgent(),
+        cookie: `tt_webid_v2=68${makeid(16)}`,
+        referer: 'https://tiktok.com',
+      },
     });
-    const { userInfo: { user: userData } } = await res.json();
-    return userData;
+    const userHtml = await res.text();
+    const breakResponse = userHtml
+      .split(
+        /<script id="__NEXT_DATA__" type="application\/json" nonce="[\w-]+" crossorigin="anonymous">/,
+      )[1]
+      .split('</script>')[0];
+    if (!breakResponse) {
+      return {};
+    }
+    const userMetadata = JSON.parse(breakResponse);
+    return userMetadata.props.pageProps.userInfo.user;
   },
-  userFeed: async (user = {}, count = 30, tries = 0) => {
-    const userAgent = userAgentList[Math.floor(Math.random() * userAgentList.length)];
+  userFeed: async (user = {}, count = 5, tries = 0) => {
+    const randmUserAgent = userAgent();
     const id = user.id;
     const secUid = user.secUid;
     const params = stringify({ secUid, id, count });
-    const url = `${feedUrl}sourceType=8&minCursor=0&maxCursor=0&lang=&verifyFp=&${params}`;
-    const signature = sign(userAgent, url);
-    const signedUrl = `${url}&_signature=${signature}`;
+    const url = `${feedUrl}sourceType=8&cursor=0&lang=&verifyFp=&aid=1988&${params}`;
     try {
-      const res = await fetch(signedUrl, {
+      const res = await fetch(url, {
         headers: {
-          'user-agent': userAgent
-        }
+          'user-agent': randmUserAgent,
+        },
       });
-      const { items } = await res.json();
-      if (items == null) {
-        console.log('Failed to fetch data with user-agent:', userAgent);
+      const { itemList } = await res.json();
+      if (itemList == null) {
+        console.log('Failed to fetch data with user-agent:', randmUserAgent);
         if (tries > 4) {
           console.error('Max attempts to fetch video feed, bailing');
           return [];
         }
         return api.userFeed(user, count, tries + 1);
       }
-      return items.map(transformItem);
+      return itemList.map(transformItem);
     } catch (e) {
       console.log(e);
       return [];
     }
-  }
+  },
 };
 export default api;
